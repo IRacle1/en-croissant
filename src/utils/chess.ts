@@ -95,10 +95,10 @@ export function getMoveText(
 
     if (opt.extraMarkups) {
       if (tree.score !== null) {
-        if (tree.score.type === "cp") {
-          content += `[%eval ${formatScore(tree.score)}] `;
+        if (tree.score.value.type === "cp") {
+          content += `[%eval ${formatScore(tree.score.value)}] `;
         } else {
-          content += `[%eval #${tree.score.value}] `;
+          content += `[%eval #${tree.score.value.value}] `;
         }
       }
       if (tree.clock !== undefined) {
@@ -235,6 +235,7 @@ export function getPGN(
     variations,
     extraMarkups,
     root = true,
+    path = null,
   }: {
     headers: GameHeaders | null;
     glyphs: boolean;
@@ -242,8 +243,12 @@ export function getPGN(
     variations: boolean;
     extraMarkups: boolean;
     root?: boolean;
+    path?: number[] | null;
   },
 ): string {
+  if (path && path.length === 0) {
+    return "";
+  }
   let pgn = "";
   if (headers) {
     pgn += headersToPGN(headers);
@@ -275,11 +280,12 @@ export function getPGN(
             variations,
             extraMarkups,
             root: false,
+            path: null,
           })}`,
       )
     : [];
   if (tree.children.length > 0) {
-    const child = tree.children[0];
+    const child = tree.children[path ? path[0] : 0];
     pgn += getMoveText(child, {
       glyphs: glyphs,
       comments,
@@ -287,22 +293,25 @@ export function getPGN(
       isFirst: root,
     });
   }
-  for (const variation of variationsPGN) {
-    pgn += ` (${variation}) `;
+  if (!path) {
+    for (const variation of variationsPGN) {
+      pgn += ` (${variation}) `;
+    }
   }
 
   if (tree.children.length > 0) {
-    pgn += getPGN(tree.children[0], {
+    pgn += getPGN(tree.children[path ? path[0] : 0], {
       headers: null,
       glyphs,
       comments,
       variations,
       extraMarkups,
       root: false,
+      path: path ? path.slice(1) : null,
     });
   }
-  if (root) {
-    pgn += ` ${headers?.result}` ?? "*";
+  if (root && headers) {
+    pgn += ` ${headers.result}`;
   }
   return pgn.trim();
 }
@@ -386,13 +395,19 @@ function innerParsePGN(
       if (comment.evaluation) {
         if (isPawns(comment.evaluation)) {
           root.score = {
-            type: "cp",
-            value: comment.evaluation.pawns * 100,
+            value: {
+              type: "cp",
+              value: comment.evaluation.pawns * 100,
+            },
+            wdl: null,
           };
         } else {
           root.score = {
-            type: "mate",
-            value: comment.evaluation.mate,
+            value: {
+              type: "mate",
+              value: comment.evaluation.mate,
+            },
+            wdl: null,
           };
         }
       }
@@ -631,8 +646,10 @@ export function getGameStats(root: TreeNode) {
     }
     const color = node.halfMoves % 2 === 1 ? "white" : "black";
     if (node.score) {
-      cplosses[color].push(getCPLoss(prevScore, node.score, color));
-      accuracies[color].push(getAccuracy(prevScore, node.score, color));
+      cplosses[color].push(getCPLoss(prevScore.value, node.score.value, color));
+      accuracies[color].push(
+        getAccuracy(prevScore.value, node.score.value, color),
+      );
       prevScore = node.score;
     }
   }
