@@ -3,6 +3,7 @@ import {
   type Icon,
   IconChess,
   IconCpu,
+  IconNetwork,
   IconDatabase,
   IconFiles,
   IconSettings,
@@ -39,12 +40,9 @@ const linksdata = [
   { icon: IconChess, label: "Board", url: "/" },
   { icon: IconUser, label: "User", url: "/accounts" },
   { icon: IconFiles, label: "Files", url: "/files" },
-  {
-    icon: IconDatabase,
-    label: "Databases",
-    url: "/databases",
-  },
+  { icon: IconDatabase, label: "Databases", url: "/databases" },
   { icon: IconCpu, label: "Engines", url: "/engines" },
+  { icon: IconNetwork, label: "Broadcasts", url: "/broadcasts" },
 ];
 
 export function SideBar() {

@@ -35,6 +35,7 @@ import type { ReviewLog } from "ts-fsrs";
 import { z } from "zod";
 import type { Session } from "../utils/session";
 import { createAsyncZodStorage, createZodStorage, fileStorage } from "./utils";
+import { Broadcast, BroadcastRound } from "@/utils/lichess/api";
 
 const zodArray = <S>(itemSchema: z.ZodType<S>) => {
   const catchValue = {} as never;
@@ -185,6 +186,20 @@ export const selectedPuzzleDbAtom = atomWithStorage<string | null>(
 
 export const selectedDatabaseAtom = atomWithStorage<DatabaseInfo | null>(
   "database-view",
+  null,
+  createJSONStorage(() => sessionStorage),
+);
+
+// Broadcast
+
+export const selectedBroadcastAtom = atomWithStorage<Broadcast | null>(
+  "broadcast-view",
+  null,
+  createJSONStorage(() => sessionStorage),
+);
+
+export const selectedBroadcastRoundAtom = atomWithStorage<BroadcastRound | null>(
+  "broadcast-round-view",
   null,
   createJSONStorage(() => sessionStorage),
 );

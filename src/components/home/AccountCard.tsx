@@ -114,6 +114,7 @@ export function AccountCard({
         timestamp ? timestamp / 1000 : null,
         filename,
         null,
+        false
       ),
     );
     events.downloadProgress.emit({

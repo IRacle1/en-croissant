@@ -17,7 +17,10 @@ import { Route as EnginesImport } from './routes/engines'
 import { Route as AccountsImport } from './routes/accounts'
 import { Route as IndexImport } from './routes/index'
 import { Route as DatabasesIndexImport } from './routes/databases/index'
+import { Route as BroadcastsIndexImport } from './routes/broadcasts/index'
 import { Route as DatabasesDatabaseIdImport } from './routes/databases/$databaseId'
+import { Route as BroadcastsBroadcastIdIndexImport } from './routes/broadcasts/$broadcastId/index'
+import { Route as BroadcastsBroadcastIdRoundIdIndexImport } from './routes/broadcasts/$broadcastId/$roundId/index'
 
 // Create/Update Routes
 
@@ -51,10 +54,28 @@ const DatabasesIndexRoute = DatabasesIndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const BroadcastsIndexRoute = BroadcastsIndexImport.update({
+  path: '/broadcasts/',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const DatabasesDatabaseIdRoute = DatabasesDatabaseIdImport.update({
   path: '/databases/$databaseId',
   getParentRoute: () => rootRoute,
 } as any)
+
+const BroadcastsBroadcastIdIndexRoute = BroadcastsBroadcastIdIndexImport.update(
+  {
+    path: '/broadcasts/$broadcastId/',
+    getParentRoute: () => rootRoute,
+  } as any,
+)
+
+const BroadcastsBroadcastIdRoundIdIndexRoute =
+  BroadcastsBroadcastIdRoundIdIndexImport.update({
+    path: '/broadcasts/$broadcastId/$roundId/',
+    getParentRoute: () => rootRoute,
+  } as any)
 
 // Populate the FileRoutesByPath interface
 
@@ -84,8 +105,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DatabasesDatabaseIdImport
       parentRoute: typeof rootRoute
     }
+    '/broadcasts/': {
+      preLoaderRoute: typeof BroadcastsIndexImport
+      parentRoute: typeof rootRoute
+    }
     '/databases/': {
       preLoaderRoute: typeof DatabasesIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/broadcasts/$broadcastId/': {
+      preLoaderRoute: typeof BroadcastsBroadcastIdIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/broadcasts/$broadcastId/$roundId/': {
+      preLoaderRoute: typeof BroadcastsBroadcastIdRoundIdIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -100,7 +133,10 @@ export const routeTree = rootRoute.addChildren([
   FilesRoute,
   SettingsRoute,
   DatabasesDatabaseIdRoute,
+  BroadcastsIndexRoute,
   DatabasesIndexRoute,
+  BroadcastsBroadcastIdIndexRoute,
+  BroadcastsBroadcastIdRoundIdIndexRoute,
 ])
 
 /* prettier-ignore-end */

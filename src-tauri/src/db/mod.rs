@@ -401,6 +401,7 @@ pub async fn convert_pgn(
     title: String,
     description: Option<String>,
     state: tauri::State<'_, AppState>,
+    clear: bool,
 ) -> Result<(), Error> {
     let description = description.unwrap_or_default();
     let extension = file.extension();
@@ -442,6 +443,21 @@ pub async fn convert_pgn(
 
     // start counting time
     let start = Instant::now();
+
+    if clear {
+        db.batch_execute(format!(
+            "
+            DELETE FROM Games;
+            DELETE FROM Info;
+            DELETE FROM Events;
+            DELETE FROM Sites;
+            DELETE FROM Players;
+            
+            INSERT INTO Info (Name, Value) VALUES (\"Version\", \"{DATABASE_VERSION}\");
+            INSERT INTO Info (Name, Value) VALUES (\"Title\", \"{title}\");
+            INSERT INTO Info (Name, Value) VALUES (\"Description\", \"{description}\");"
+        ).as_str())?;
+    }
 
     let mut importer = Importer::new(timestamp.map(|t| t as i64));
     db.transaction::<_, diesel::result::Error, _>(|db| {

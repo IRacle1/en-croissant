@@ -50,7 +50,7 @@ function AddDatabase({
     setLoading(true);
     const dbPath = await resolve(await appDataDir(), "db", `${title}.db3`);
     unwrap(
-      await commands.convertPgn(path, dbPath, null, title, description ?? null),
+      await commands.convertPgn(path, dbPath, null, title, description ?? null, false),
     );
     setDatabases(await getDatabases());
     setLoading(false);

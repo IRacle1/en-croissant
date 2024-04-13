@@ -17,7 +17,7 @@ import {
 import { countMainPly } from "@/utils/treeReducer";
 import { notifications } from "@mantine/notifications";
 import { IconX } from "@tabler/icons-react";
-import { type Response, fetch } from "@tauri-apps/api/http";
+import { type Response, fetch, ResponseType } from "@tauri-apps/api/http";
 import { appDataDir, resolve } from "@tauri-apps/api/path";
 import type { Color } from "chessground/types";
 import { parseUci } from "chessops";
@@ -163,6 +163,33 @@ type PositionGames = {
   year: number;
   month: string;
 }[];
+
+export type Broadcast = {
+  tour: BroadcastTour;
+  rounds: BroadcastRound[];
+};
+
+export type BroadcastTour = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  createdAt: number;
+  tier: number;
+  image: string;
+  markup: string;
+  leaderboard: boolean;
+};
+
+export type BroadcastRound = {
+  ongoing: boolean;
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: number,
+  finished: boolean;
+  startsAt: number;
+}
 
 export async function convertToNormalized(
   data: PositionGames,
@@ -420,4 +447,47 @@ export async function getTablebaseInfo(fen: string) {
     throw new Error(`Failed to load tablebase info for ${fen} - ${res.status}`);
   }
   return res.data;
+}
+
+export async function GetBroadcasts(): Promise<Broadcast[]> {
+  const res = await window.fetch(`${baseURL}/broadcast`);
+  
+  if (!res.ok) {
+    throw new Error(`Failed to load broadcasts`);
+  }
+
+  const responseText = await res.text();
+
+  const json = "[" + responseText.replace(/\r?\n/g, ",").replace(/,\s*$/, "") + "]";
+  const jsondata = JSON.parse(json);
+
+  return jsondata;
+}
+
+export async function GetBroadcast(id: string) {
+  const res = await fetch<Broadcast>(`${baseURL}/broadcast/${id}`);
+  if (!res.ok) {
+    throw new Error(`Failed to load broadcast`);
+  }
+  return res.data;
+}
+
+export async function GetRoundPgn(roundId: string): Promise<string> {
+  let url = `${baseURL}/broadcast/round/${roundId}.pgn`;
+
+  const path = await resolve(await appDataDir(), "db", `b_${roundId}_lichess.pgn`);
+
+  await invoke("download_file", {
+    id: `b_${roundId}_lichess`,
+    url,
+    path,
+    undefined,
+    totalSize: undefined, //TODO: real
+  });
+
+  return path;
+}
+
+export function UnixToNormalTime(unixTime: number): Date {
+  return new Date(unixTime);
 }
