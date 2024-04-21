@@ -1,8 +1,10 @@
 import {
+  allEnabledAtom,
   autoSaveAtom,
   currentPracticeTabAtom,
   currentTabAtom,
   currentTabSelectedAtom,
+  enableAllAtom,
 } from "@/state/atoms";
 import { keyMapAtom } from "@/state/keybinds";
 import { getVariationLine } from "@/utils/chess";
@@ -53,6 +55,7 @@ function BoardAnalysis() {
 
   const reset = useStore(store, (s) => s.reset);
   const clearShapes = useStore(store, (s) => s.clearShapes);
+  const setAnnotation = useStore(store, (s) => s.setAnnotation);
 
   const saveFile = useCallback(async () => {
     saveToFile({
@@ -82,11 +85,42 @@ function BoardAnalysis() {
     });
   }, [setCurrentTab, reset, currentTab?.file?.path]);
 
+  const [, enable] = useAtom(enableAllAtom);
+  const allEnabledLoader = useAtomValue(allEnabledAtom);
+  const allEnabled =
+    allEnabledLoader.state === "hasData" && allEnabledLoader.data;
+
   const keyMap = useAtomValue(keyMapAtom);
   useHotkeys([
     [keyMap.SAVE_FILE.keys, () => saveFile()],
     [keyMap.CLEAR_SHAPES.keys, () => clearShapes()],
   ]);
+  useHotkeys([
+    [keyMap.ANNOTATION_BRILLIANT.keys, () => setAnnotation("!!")],
+    [keyMap.ANNOTATION_GOOD.keys, () => setAnnotation("!")],
+    [keyMap.ANNOTATION_INTERESTING.keys, () => setAnnotation("!?")],
+    [keyMap.ANNOTATION_DUBIOUS.keys, () => setAnnotation("?!")],
+    [keyMap.ANNOTATION_MISTAKE.keys, () => setAnnotation("?")],
+    [keyMap.ANNOTATION_BLUNDER.keys, () => setAnnotation("??")],
+    [
+      keyMap.PRACTICE_TAB.keys,
+      () => {
+        isRepertoire && setCurrentTabSelected("practice");
+      },
+    ],
+    [keyMap.ANALYSIS_TAB.keys, () => setCurrentTabSelected("analysis")],
+    [keyMap.DATABASE_TAB.keys, () => setCurrentTabSelected("database")],
+    [keyMap.ANNOTATE_TAB.keys, () => setCurrentTabSelected("annotate")],
+    [keyMap.INFO_TAB.keys, () => setCurrentTabSelected("info")],
+    [
+      keyMap.TOGGLE_ALL_ENGINES.keys,
+      (e) => {
+        enable(!allEnabled);
+        e.preventDefault();
+      },
+    ],
+  ]);
+
   const [currentTabSelected, setCurrentTabSelected] = useAtom(
     currentTabSelectedAtom,
   );
